@@ -3,15 +3,15 @@ from tkinter import font
 from tkinter import ttk
 
 class SNMPClient():
-    def __init__(self):
-        clientIp = ''
-        
+    def __init__(self, ip):
+        #TODO: check if ip is valid and return error if not (when creating client)
+        self.clientIp = ip
 
-class NetworkManagerGui:
+class NetworkManagerGui():
     def __init__(self):
         # TODO: refactor name
         self.ipEntryValue = ''
-        self.snmpClient = SNMPClient()
+        self.snmpClient = []
           
     def setup (self):
         self.window = Tk()
@@ -34,18 +34,18 @@ class NetworkManagerGui:
         ipInputFrame = ttk.Frame(parent, padding=10)
         ipInputFrame.grid(row=row, column=column, sticky='W')
         
+        ipRecentLabel = Label(ipInputFrame, text='Recent IPs: ', padx=10)
+        # TODO: add recent entries to the listbox
+        ipRecentList = Listbox(ipInputFrame)
+        
         ipLabel = Label(ipInputFrame, text='IP: ')
 
         # TODO: use entry to create a SNMP Session
         ipEntryString = StringVar()
         ipEntry = Entry(ipInputFrame, textvariable=ipEntryString)
-        ipEntry.bind('<Return>', lambda event: self.readIpInput(ipEntry.get()))
+        ipEntry.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), ipRecentList))
         
-        ipRecentLabel = Label(ipInputFrame, text='Recent IPs: ', padx=10)
 
-        # TODO: add recent entries to the listbox
-        ipRecentList = Listbox(ipInputFrame)
-        ipRecentList.insert(0, 'ip 1')
         
         ipLabel.pack(side=LEFT)
         ipEntry.pack(side=LEFT)
@@ -72,17 +72,20 @@ class NetworkManagerGui:
         deviceUsageText = Label(deviceUsageFrame, text='Agent\'s bandwidth usage goes here')
         deviceUsageText.grid(row=1, column=0)
 
-    def readIpInput (self, input):
-        self.ipEntryValue = input
+    def receiveIpInput(self, input, recentIpsList):
+        self.setSNMPClientIp(input)
+        self.setRecentIps(input, recentIpsList)
+    
+    def setSNMPClientIp (self, ip):
+        self.snmpClient = SNMPClient(ip)
+        
+    def setRecentIps (self, ip, recentIpsList):
+        recentIpsList.insert(0,ip)
 
 def main ():
     appMainWindow = NetworkManagerGui()
     appMainWindow.setup()
     appMainWindow.start()
-
-    # snmpClient = SNMPClient()
-    # snmpClient.clientIp = appMainWindow.ipEntryValue
-    # print(snmpClient.clientIp)
     
 if __name__ == '__main__':
     main()
