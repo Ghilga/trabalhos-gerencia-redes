@@ -10,7 +10,8 @@ class SNMPClient():
         #TODO: start SNMPv3 session and return any exception found to show the error
         try:
             # return Session(hostname=ip, community='public', version=3)
-            raise Exception('Timeout')
+            # remove the line below after implementing snmp session login
+            raise Exception('Tried to login with ip: ' + ip)
         except Exception as ex:
             self.showIpErrorMessage(ex)
        

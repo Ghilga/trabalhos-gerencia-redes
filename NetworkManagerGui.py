@@ -31,17 +31,15 @@ class NetworkManagerGui():
         ipInputFrame.grid(row=row, column=column, sticky='W')
         
         ipRecentLabel = Label(ipInputFrame, text='Recent IPs: ', padx=10)
-        # TODO: add recent entries to the listbox
         ipRecentList = Listbox(ipInputFrame)
+        ipRecentList.bind('<Double-1>', lambda event: self.receiveIpInput(ipRecentList.selection_get()))
+        ipRecentList.bind('<Return>', lambda event: self.receiveIpInput(ipRecentList.selection_get()), add='+')
         
         ipLabel = Label(ipInputFrame, text='IP: ')
 
-        # TODO: use entry to create a SNMP Session
         ipEntryString = StringVar()
         ipEntry = Entry(ipInputFrame, textvariable=ipEntryString)
         ipEntry.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), ipRecentList))
-        
-
         
         ipLabel.pack(side=LEFT)
         ipEntry.pack(side=LEFT)
@@ -69,9 +67,11 @@ class NetworkManagerGui():
         deviceUsageText.grid(row=1, column=0)
 
  
-    def receiveIpInput(self, input, recentIpsList):
+    def receiveIpInput(self, input, recentIpsList=None):
         self.setSNMPClientIp(input)
-        self.setRecentIps(input, recentIpsList)
+        
+        if (recentIpsList):
+            self.setRecentIps(input, recentIpsList)
     
     def setSNMPClientIp (self, ip):
         self.snmpClient = SNMPClient(ip)
