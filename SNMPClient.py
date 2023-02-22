@@ -9,6 +9,7 @@ class SNMPClient():
     def initiateSNMPSession(self, ip):
         #TODO: start SNMPv3 session and return any exception found to show the error
         try:
+            # return Session(hostname=ip, community='public', version=3)
             raise Exception('Timeout')
         except Exception as ex:
             self.showIpErrorMessage(ex)
