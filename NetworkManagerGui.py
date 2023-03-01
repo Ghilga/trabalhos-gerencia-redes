@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import font
 from tkinter import ttk
 from SNMPClient import *
+import time
 
 class NetworkManagerGui():
     def __init__(self):
@@ -9,29 +10,24 @@ class NetworkManagerGui():
         self.bandwidthUsageFrame = []
         self.ipEntryValue = ''
         self.snmpClient = []
-        self.deviceInfosOID = ['sysName.0',
-            'sysUpTimeInstance',
-            'ifNumber.0',
-            'sysServices.0',
-            'sysContact.0',
-        ]
-        self.deviceInfosName = { 'sysName.0' : 'System Name: ',
+        self.deviceInfosName = {
+            'sysName.0' : 'System Name: ',
             'sysUpTimeInstance' : 'Uptime: ',
             'ifNumber.0' : 'Available Interfaces Quantity: ',
             'sysServices.0' : 'Available Services: ',
             'sysContact.0' : 'Admin Contact: '
         }
-        self.bandwidthInfosOID = ['ifSpeed.2',
-            'snmpInPkts.0',
-            'snmpOutPkts.0',
-            'ifInOctets.2',
-            'ifOutOctets.2'
-        ]
-        self.bandwidthInfosName = {'ifSpeed.2' : 'Transmission Speed: ',
-            'snmpInPkts.0' : 'Input Packets: ',
-            'snmpOutPkts.0' : 'Output Packets: ',
+        self.bandwidthInfosName = {
+            'ifSpeed.2' : 'Transmission Speed: ',
+            'ifOperStatus.2' : 'Interface operational status: ',
+            'ifOutErrors.2' : 'Outbound packets with error: ',
+            'ifInErrors.2' : 'Inbound packets with error: ',
             'ifInOctets.2' : 'Input Octets: ',
-            'ifOutOctets.2' : 'Output Octets: '
+            'ifOutOctets.2' : 'Output Octets: ',
+            'ipInReceives.0' : 'Received IP datagrams: ',
+            'ipOutRequests.0' : 'Sent IP datagrams: ',
+            'snmpInPkts.0' : 'SNMP Input Packets: ',
+            'snmpOutPkts.0' : 'SNMP Output Packets: '
         }
           
     def setup (self):
@@ -45,8 +41,8 @@ class NetworkManagerGui():
         mainInfoFrame.grid(row=1,column=0)
         
         self.createIpInputSection(self.window,0,0)
-        self.createDeviceInfoSection(mainInfoFrame,0,0)
-        self.createBandwidthUsageSection(mainInfoFrame,0,1)
+        self.createDeviceInfoSection(mainInfoFrame)
+        self.createBandwidthUsageSection(mainInfoFrame)
         
     def start (self):
         self.window.mainloop()
@@ -71,16 +67,16 @@ class NetworkManagerGui():
         ipRecentList.pack(side=RIGHT)
         ipRecentLabel.pack(side=RIGHT)
 
-    def createDeviceInfoSection (self, parent, row, column):    
+    def createDeviceInfoSection (self, parent):    
         self.deviceInfoFrame = ttk.Frame(parent, padding=10, relief=SUNKEN)
-        self.deviceInfoFrame.grid(row=row, column=column, sticky='W')
+        self.deviceInfoFrame.pack(side=LEFT, anchor='nw')
 
         deviceInfoLabel = Label(self.deviceInfoFrame, text='Device info')
         deviceInfoLabel.pack(side=TOP)
 
-    def createBandwidthUsageSection (self, parent, row, column): 
+    def createBandwidthUsageSection (self, parent): 
         self.bandwidthUsageFrame = ttk.Frame(parent, padding=10, relief=SUNKEN)
-        self.bandwidthUsageFrame.grid(row=row, column=column, sticky='W')
+        self.bandwidthUsageFrame.pack(side=RIGHT, anchor='ne')
 
         deviceUsageLabel = Label(self.bandwidthUsageFrame, text='Bandwidth Info')
         deviceUsageLabel.pack(side=TOP)
@@ -109,27 +105,31 @@ class NetworkManagerGui():
         deviceInfoLabel = Label(parent, text='Device info')
         deviceInfoLabel.pack(side=TOP)
 
-        for infoOID in self.deviceInfosOID:
-            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName)
+        for infoOID in self.deviceInfosName:
+            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName[infoOID])
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
+        
+        # parent.after(2000, self.createDeviceInfos, parent, snmpClient)
     
     def createBandwidthInfos(self, parent, snmpClient):
         self.destroyChildrenWidgets(parent)
         bandwidthInfoLabel = Label(parent, text='Bandwidth Info')
         bandwidthInfoLabel.pack(side=TOP)
 
-        for infoOID in self.bandwidthInfosOID:
-            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName)
+        for infoOID in self.bandwidthInfosName:
+            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
+            
+        # parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 
-    def getFormattedInfoText (self, infoOID, value, nameMap):
+    def getFormattedInfoText (self, infoOID, value, infoTemplateText):
         infoText = ''
         if (infoOID == 'ifSpeed.2'):
-            infoText = nameMap[infoOID] + str(int(value)/1000000) + ' MB/s'
+            infoText = infoTemplateText + str(int(value)/1000000) + ' MB/s'
         elif (infoOID == 'sysUpTimeInstance'):
-            infoText = nameMap[infoOID] + str(int(value)*100) + ' s'
+            infoText = infoTemplateText + str(int(value)*100) + ' s'
         else:
-            infoText = nameMap[infoOID] + value
+            infoText = infoTemplateText + value
         return infoText

@@ -5,7 +5,7 @@ class SNMPClient():
     def __init__(self, ip):
         self.sysName = ''
         self.clientIp = ip
-        self.clientSession = self.initiateSNMPSession(ip)
+        self.clientSession = self.initiateSNMPSession(ip, True)
     
     def initiateSNMPSession(self, ip, v3=False):
         try:
