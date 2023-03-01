@@ -63,7 +63,7 @@ class NetworkManagerGui():
 
         passwordInputString = StringVar()
         passwordInputLabel = Label(loginFrame, text='Password: ')
-        passwordInput = Entry(loginFrame, textvariable=passwordInputString)
+        passwordInput = Entry(loginFrame, textvariable=passwordInputString, show='*')
         passwordInput.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
 
         ipRecentFrame = ttk.Frame(parent, padding=10)
