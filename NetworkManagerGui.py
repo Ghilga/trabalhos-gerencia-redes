@@ -37,35 +37,55 @@ class NetworkManagerGui():
         
         defaultFont = font.nametofont('TkDefaultFont')
         defaultFont.configure(family='futura', size=12)
+        authenticationFrame = ttk.Frame(self.window, padding=10)
         mainInfoFrame = ttk.Frame(self.window, padding=10)
-        mainInfoFrame.grid(row=1,column=0)
+        authenticationFrame.pack(side=TOP)
+        mainInfoFrame.pack(side=TOP)
         
-        self.createIpInputSection(self.window,0,0)
+        self.createLoginSection(authenticationFrame)
         self.createDeviceInfoSection(mainInfoFrame)
         self.createBandwidthUsageSection(mainInfoFrame)
         
     def start (self):
         self.window.mainloop()
     
-    def createIpInputSection (self, parent, row, column):
-        ipInputFrame = ttk.Frame(parent, padding=10)
-        ipInputFrame.grid(row=row, column=column, sticky='W')
-        
-        ipRecentLabel = Label(ipInputFrame, text='Recent IPs: ', padx=10)
-        ipRecentList = Listbox(ipInputFrame)
-        ipRecentList.bind('<Double-1>', lambda event: self.receiveIpInput(ipRecentList.selection_get()))
-        ipRecentList.bind('<Return>', lambda event: self.receiveIpInput(ipRecentList.selection_get()), add='+')
-        
-        ipLabel = Label(ipInputFrame, text='IP: ')
-
+    def createLoginSection (self, parent):
+        loginFrame = ttk.Frame(parent, padding=10)
+        ipLabel = Label(loginFrame, text='IP: ')
         ipEntryString = StringVar()
-        ipEntry = Entry(ipInputFrame, textvariable=ipEntryString)
-        ipEntry.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), ipRecentList))
+        ipEntry = Entry(loginFrame, textvariable=ipEntryString)
+        ipEntry.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+
+        usernameInputString = StringVar()
+        usernameInputLabel = Label(loginFrame, text='Username: ')
+        usernameInput = Entry(loginFrame, textvariable=usernameInputString)
+        usernameInput.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+
+        passwordInputString = StringVar()
+        passwordInputLabel = Label(loginFrame, text='Password: ')
+        passwordInput = Entry(loginFrame, textvariable=passwordInputString)
+        passwordInput.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+
+        ipRecentFrame = ttk.Frame(parent, padding=10)
+        ipRecentLabel = Label(ipRecentFrame, text='Recent IPs: ', padx=10)
+        ipRecentList = Listbox(ipRecentFrame)
+        ipRecentList.bind('<Double-1>', lambda event: self.receiveIpInput(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()))
+        ipRecentList.bind('<Return>', lambda event: self.receiveIpInput(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()), add='+')
         
-        ipLabel.pack(side=LEFT)
-        ipEntry.pack(side=LEFT)
-        ipRecentList.pack(side=RIGHT)
-        ipRecentLabel.pack(side=RIGHT)
+        # Login inputs frame
+        loginFrame.pack(side=LEFT)
+        ipLabel.grid(row=0, column=0)
+        ipEntry.grid(row=0, column=1)
+        usernameInputLabel.grid(row=1, column=0)
+        usernameInput.grid(row=1, column=1)
+        passwordInputLabel.grid(row=2, column=0)
+        passwordInput.grid(row=2, column=1)
+
+        # Recent ips frame
+        ipRecentFrame.pack(side=RIGHT)
+        ipRecentLabel.grid(row=0, column=0)
+        ipRecentList.grid(row=0, column=1)
+
 
     def createDeviceInfoSection (self, parent):    
         self.deviceInfoFrame = ttk.Frame(parent, padding=10, relief=SUNKEN)
@@ -81,17 +101,17 @@ class NetworkManagerGui():
         deviceUsageLabel = Label(self.bandwidthUsageFrame, text='Bandwidth Info')
         deviceUsageLabel.pack(side=TOP)
 
-    def receiveIpInput(self, input, recentIpsList=None):
-        self.setSNMPClientIp(input)
+    def receiveIpInput(self, ip, username, password, recentIpsList=None):
+        self.setSNMPClientIp(ip, username, password)
         
         if (recentIpsList):
-            self.setRecentIps(input, recentIpsList)
+            self.setRecentIps(ip, recentIpsList)
         
         self.createDeviceInfos(self.deviceInfoFrame, self.snmpClient.clientSession)
         self.createBandwidthInfos(self.bandwidthUsageFrame, self.snmpClient.clientSession)
     
-    def setSNMPClientIp (self, ip):
-        self.snmpClient = SNMPClient(ip)
+    def setSNMPClientIp (self, ip, username, password):
+        self.snmpClient = SNMPClient(ip, username, password)
         
     def setRecentIps (self, ip, recentIpsList):
         recentIpsList.insert(0,ip)
