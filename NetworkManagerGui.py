@@ -120,13 +120,18 @@ class NetworkManagerGui():
 
     def startMonitoring(self, ip, username, password, recentIpsList=None):
         currentTime = 0
-        while currentTime < int(self.timeEntryString.get()):
-            self.setSNMPClientIp(ip, username, password)
-        
-            if (recentIpsList):
-                self.setRecentIps(ip, recentIpsList)
+        self.setSNMPClientIp(ip, username, password)
+        if (recentIpsList):
+            self.setRecentIps(ip, recentIpsList)
 
-            self.getDevicesInfo()  
+        while currentTime < int(self.timeEntryString.get()): 
+            try:
+                self.getDevicesInfo()  
+            except Exception as ex:
+                print(ex)
+                time.sleep(1)
+                self.setSNMPClientIp(ip, username, password)
+            
             time.sleep(1)
             currentTime += 1
         #self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
@@ -149,13 +154,9 @@ class NetworkManagerGui():
         deviceInfoLabel.pack(side=TOP)
 
         for infoOID in self.deviceInfosName:
-            try:
-                infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName[infoOID])
-                infoLabel = Label(parent, text=infoText)
-                infoLabel.pack(side=TOP, anchor='w')
-            except Exception as ex:
-                print(ex)
-           
+            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName[infoOID])
+            infoLabel = Label(parent, text=infoText)
+            infoLabel.pack(side=TOP, anchor='w')
         
         # parent.after(2000, self.createDeviceInfos, parent, snmpClient)
     
@@ -165,12 +166,9 @@ class NetworkManagerGui():
         bandwidthInfoLabel.pack(side=TOP)
 
         for infoOID in self.bandwidthInfosName:
-            try:
-                infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
-                infoLabel = Label(parent, text=infoText)
-                infoLabel.pack(side=TOP, anchor='w')
-            except Exception as ex:
-                print(ex)
+            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
+            infoLabel = Label(parent, text=infoText)
+            infoLabel.pack(side=TOP, anchor='w')
             
         # parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 
