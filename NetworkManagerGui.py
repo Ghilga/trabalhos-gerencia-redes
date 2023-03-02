@@ -60,6 +60,8 @@ class NetworkManagerGui():
         timeLabel = Label(loginFrame, text='Monitoring Time (s): ')
         self.timeEntryString = StringVar()
         self.timeEntryString = Entry(loginFrame, textvariable=self.timeEntryString)
+        self.timeEntryString.bind('<Return>', lambda event: self.registerNewSNMP(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+
 
         usernameInputString = StringVar()
         usernameInputLabel = Label(loginFrame, text='Username: ')
@@ -109,23 +111,27 @@ class NetworkManagerGui():
         deviceUsageLabel.pack(side=TOP)
 
     def registerNewSNMP(self, ip, username, password, recentIpsList=None):
-        self.setSNMPClientIp(ip, username, password)
-        
-        if (recentIpsList):
-            self.setRecentIps(ip, recentIpsList)
-
-        self.getDevicesInfo()   
-        self.startMonitoring()   
+        self.startMonitoring(ip, username, password, recentIpsList)   
 
     def getDevicesInfo(self):
-        # print('get devices info')
+        print('get devices info')
         self.createDeviceInfos(self.deviceInfoFrame, self.snmpClient.clientSession)
         self.createBandwidthInfos(self.bandwidthUsageFrame, self.snmpClient.clientSession)
 
-    def startMonitoring(self):
-        self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
-        self.monitoringThread.start()
-        self.monitoringThread.join()
+    def startMonitoring(self, ip, username, password, recentIpsList=None):
+        currentTime = 0
+        while currentTime < int(self.timeEntryString.get()):
+            self.setSNMPClientIp(ip, username, password)
+        
+            if (recentIpsList):
+                self.setRecentIps(ip, recentIpsList)
+
+            self.getDevicesInfo()  
+            time.sleep(1)
+            currentTime += 1
+        #self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
+        #self.monitoringThread.start()
+        #self.monitoringThread.join()
 
     def setSNMPClientIp (self, ip, username, password):
         self.snmpClient = SNMPClient(ip, username, password)
@@ -143,9 +149,13 @@ class NetworkManagerGui():
         deviceInfoLabel.pack(side=TOP)
 
         for infoOID in self.deviceInfosName:
-            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName[infoOID])
-            infoLabel = Label(parent, text=infoText)
-            infoLabel.pack(side=TOP, anchor='w')
+            try:
+                infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.deviceInfosName[infoOID])
+                infoLabel = Label(parent, text=infoText)
+                infoLabel.pack(side=TOP, anchor='w')
+            except Exception as ex:
+                print(ex)
+           
         
         # parent.after(2000, self.createDeviceInfos, parent, snmpClient)
     
@@ -155,9 +165,12 @@ class NetworkManagerGui():
         bandwidthInfoLabel.pack(side=TOP)
 
         for infoOID in self.bandwidthInfosName:
-            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
-            infoLabel = Label(parent, text=infoText)
-            infoLabel.pack(side=TOP, anchor='w')
+            try:
+                infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
+                infoLabel = Label(parent, text=infoText)
+                infoLabel.pack(side=TOP, anchor='w')
+            except Exception as ex:
+                print(ex)
             
         # parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 

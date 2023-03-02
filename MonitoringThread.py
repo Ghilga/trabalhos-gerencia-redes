@@ -10,11 +10,12 @@ class MonitoringThread(threading.Thread):
         self.isRunning = True
         
     def run(self):
+        print(self.currentTime)
+        print(self.totalTime)
         while self.isRunning and self.currentTime < self.totalTime:
             self.updateInfoFunction()
             self.currentTime += 1
-            time.sleep(1)
-            threading.Thread(target=self._stop).start()  # Encerra a thread após o tempo limite
+            threading.Thread(target=self._stop).start() 
 
     def _stop(self):
         if self.currentTime >= self.totalTime:
