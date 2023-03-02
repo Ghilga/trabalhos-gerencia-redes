@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import font
 from tkinter import ttk
 from SNMPClient import *
+from MonitoringThread import *
 import time
 
 class NetworkManagerGui():
@@ -54,32 +55,38 @@ class NetworkManagerGui():
         ipLabel = Label(loginFrame, text='IP: ')
         ipEntryString = StringVar()
         ipEntry = Entry(loginFrame, textvariable=ipEntryString)
-        ipEntry.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+        ipEntry.bind('<Return>', lambda event: self.registerNewSNMP(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+      
+        timeLabel = Label(loginFrame, text='Monitoring Time (s): ')
+        self.timeEntryString = StringVar()
+        self.timeEntryString = Entry(loginFrame, textvariable=self.timeEntryString)
 
         usernameInputString = StringVar()
         usernameInputLabel = Label(loginFrame, text='Username: ')
         usernameInput = Entry(loginFrame, textvariable=usernameInputString)
-        usernameInput.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+        usernameInput.bind('<Return>', lambda event: self.registerNewSNMP(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
 
         passwordInputString = StringVar()
         passwordInputLabel = Label(loginFrame, text='Password: ')
         passwordInput = Entry(loginFrame, textvariable=passwordInputString, show='*')
-        passwordInput.bind('<Return>', lambda event: self.receiveIpInput(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
+        passwordInput.bind('<Return>', lambda event: self.registerNewSNMP(ipEntry.get(), usernameInput.get(),passwordInput.get(), ipRecentList))
 
         ipRecentFrame = ttk.Frame(parent, padding=10)
         ipRecentLabel = Label(ipRecentFrame, text='Recent IPs: ', padx=10)
         ipRecentList = Listbox(ipRecentFrame)
-        ipRecentList.bind('<Double-1>', lambda event: self.receiveIpInput(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()))
-        ipRecentList.bind('<Return>', lambda event: self.receiveIpInput(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()), add='+')
+        ipRecentList.bind('<Double-1>', lambda event: self.registerNewSNMP(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()))
+        ipRecentList.bind('<Return>', lambda event: self.registerNewSNMP(ipRecentList.selection_get(), usernameInput.get(),passwordInput.get()), add='+')
         
         # Login inputs frame
         loginFrame.pack(side=LEFT)
-        ipLabel.grid(row=0, column=0)
-        ipEntry.grid(row=0, column=1)
-        usernameInputLabel.grid(row=1, column=0)
-        usernameInput.grid(row=1, column=1)
-        passwordInputLabel.grid(row=2, column=0)
-        passwordInput.grid(row=2, column=1)
+        usernameInputLabel.grid(row=0, column=0)
+        usernameInput.grid(row=0, column=1)
+        passwordInputLabel.grid(row=1, column=0)
+        passwordInput.grid(row=1, column=1)
+        ipLabel.grid(row=2, column=0)
+        ipEntry.grid(row=2, column=1)
+        timeLabel.grid(row=3, column=0)
+        self.timeEntryString.grid(row=3, column=1)
 
         # Recent ips frame
         ipRecentFrame.pack(side=RIGHT)
@@ -101,15 +108,25 @@ class NetworkManagerGui():
         deviceUsageLabel = Label(self.bandwidthUsageFrame, text='Bandwidth Info')
         deviceUsageLabel.pack(side=TOP)
 
-    def receiveIpInput(self, ip, username, password, recentIpsList=None):
+    def registerNewSNMP(self, ip, username, password, recentIpsList=None):
         self.setSNMPClientIp(ip, username, password)
         
         if (recentIpsList):
             self.setRecentIps(ip, recentIpsList)
-        
+
+        self.getDevicesInfo()   
+        self.startMonitoring()   
+
+    def getDevicesInfo(self):
+        # print('get devices info')
         self.createDeviceInfos(self.deviceInfoFrame, self.snmpClient.clientSession)
         self.createBandwidthInfos(self.bandwidthUsageFrame, self.snmpClient.clientSession)
-    
+
+    def startMonitoring(self):
+        self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
+        self.monitoringThread.start()
+        self.monitoringThread.join()
+
     def setSNMPClientIp (self, ip, username, password):
         self.snmpClient = SNMPClient(ip, username, password)
         
