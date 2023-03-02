@@ -3,6 +3,7 @@ from tkinter import messagebox
 
 class SNMPClient():
     def __init__(self, ip, username=None, password=None):
+        self.ip = ip
         self.clientSession = self.initiateSNMPSession(ip, username, password, True)
     
     def initiateSNMPSession(self, ip, username=None, password=None, v3=False):

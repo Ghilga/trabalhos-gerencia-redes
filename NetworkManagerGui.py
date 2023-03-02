@@ -120,20 +120,21 @@ class NetworkManagerGui():
 
     def startMonitoring(self, ip, username, password, recentIpsList=None):
         currentTime = 0
-        self.setSNMPClientIp(ip, username, password)
-        if (recentIpsList):
-            self.setRecentIps(ip, recentIpsList)
+        if (not self.snmpClient or self.snmpClient.ip != ip):
+            self.setSNMPClientIp(ip, username, password)
+            if (recentIpsList):
+                self.setRecentIps(ip, recentIpsList)
+        self.getDevicesInfo()
 
-        while currentTime < int(self.timeEntryString.get()): 
-            try:
-                self.getDevicesInfo()  
-            except Exception as ex:
-                print(ex)
-                time.sleep(1)
-                self.setSNMPClientIp(ip, username, password)
+        # while currentTime < int(self.timeEntryString.get()): 
+            # try:
+            # except Exception as ex:
+                # print(ex)
+                # time.sleep(1)
+        # self.setSNMPClientIp(ip, username, password)
             
-            time.sleep(1)
-            currentTime += 1
+            # time.sleep(1)S
+            # currentTime += 1
         #self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
         #self.monitoringThread.start()
         #self.monitoringThread.join()
@@ -158,7 +159,7 @@ class NetworkManagerGui():
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
         
-        # parent.after(2000, self.createDeviceInfos, parent, snmpClient)
+        parent.after(2000, self.createDeviceInfos, parent, snmpClient)
     
     def createBandwidthInfos(self, parent, snmpClient):
         self.destroyChildrenWidgets(parent)
@@ -170,7 +171,7 @@ class NetworkManagerGui():
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
             
-        # parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
+        parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 
     def getFormattedInfoText (self, infoOID, value, infoTemplateText):
         infoText = ''
