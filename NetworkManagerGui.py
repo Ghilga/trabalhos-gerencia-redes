@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import font
 from tkinter import ttk
+from tkinter import Canvas
 from SNMPClient import *
 from MonitoringThread import *
 import time
@@ -30,22 +31,31 @@ class NetworkManagerGui():
             'snmpInPkts.0' : 'SNMP Input Packets: ',
             'snmpOutPkts.0' : 'SNMP Output Packets: '
         }
+        self.chartKeys = {
+            'ipInReceives.0' : 0,
+            'ipOutRequests.0' : 0,
+            'snmpInPkts.0' : 0,
+            'snmpOutPkts.0' : 0
+        }
           
     def setup (self):
         self.window = Tk()
         self.window.title('Network Manager')
-        self.window.geometry('800x600')
+        self.window.geometry('1000x900')
         
         defaultFont = font.nametofont('TkDefaultFont')
         defaultFont.configure(family='futura', size=12)
         authenticationFrame = ttk.Frame(self.window, padding=10)
         mainInfoFrame = ttk.Frame(self.window, padding=10)
+        chartFrame = ttk.Frame(self.window, padding=10)
         authenticationFrame.pack(side=TOP)
         mainInfoFrame.pack(side=TOP)
+        chartFrame.pack(side=TOP)
         
         self.createLoginSection(authenticationFrame)
         self.createDeviceInfoSection(mainInfoFrame)
         self.createBandwidthUsageSection(mainInfoFrame)
+        self.createChartSection(chartFrame)
         
     def start (self):
         self.window.mainloop()
@@ -110,6 +120,41 @@ class NetworkManagerGui():
         deviceUsageLabel = Label(self.bandwidthUsageFrame, text='Bandwidth Info')
         deviceUsageLabel.pack(side=TOP)
 
+    def createChartSection (self, parent): 
+        self.chart = ttk.Frame(parent, width=800, height=200, padding=10)
+        self.chart.pack(side=BOTTOM)
+
+        chartLabel = Label(self.chart, text='Chart')
+        chartLabel.pack(side=TOP)
+        self.arrStartY = [0, 80, 130, 180]
+        self.colors = ['red', 'blue', 'green', 'yellow']
+        self.labels = ['Received IP datagrams', 'Sent IP datagrams', 'SNMP Input Packets', 'SNMP Output Packets']
+        self.keys = ['ipInReceives.0', 'ipOutRequests.0', 'snmpInPkts.0', 'snmpOutPkts.0']
+        self.valueLabel = {}
+
+        self.chartContainer = Canvas(self.chart, width=800, height=300)
+        self.chartContainer.pack(side=TOP)
+        # self.drawChartContent()
+
+    def drawChartContent(self):
+        for i in range(4): 
+            self.drawRectangle(self.keys[i], self.arrStartY[i], self.colors[i])
+            self.clearLabels(self.keys[i])
+            self.drawLabels(self.keys[i], self.arrStartY[i], self.labels[i])
+
+    def drawRectangle(self, keyIndex, yStart, color):
+        maxValues = max([int(val) for val in self.chartKeys.values()])
+        itemWidth = int(self.chartKeys[keyIndex]) * 500 / maxValues
+        self.chartContainer.create_rectangle(200, yStart+15, itemWidth + 200, yStart + 35, fill=color)
+
+    def drawLabels(self, keyIndex, yStart, label):
+        self.chartContainer.create_text(100, yStart + 20, text=label)
+        self.valueLabel[keyIndex] = self.chartContainer.create_text(100, yStart + 40, text=self.chartKeys[keyIndex])
+
+    def clearLabels(self, keyIndex):
+        if keyIndex in self.valueLabel:
+            self.chartContainer.delete(self.valueLabel[keyIndex])
+
     def registerNewSNMP(self, ip, username, password, recentIpsList=None):
         self.startMonitoring(ip, username, password, recentIpsList)   
 
@@ -124,17 +169,13 @@ class NetworkManagerGui():
             self.setSNMPClientIp(ip, username, password)
             if (recentIpsList):
                 self.setRecentIps(ip, recentIpsList)
+        
         self.getDevicesInfo()
 
         # while currentTime < int(self.timeEntryString.get()): 
-            # try:
-            # except Exception as ex:
-                # print(ex)
-                # time.sleep(1)
-        # self.setSNMPClientIp(ip, username, password)
             
-            # time.sleep(1)S
-            # currentTime += 1
+        #     time.sleep(1)
+        #     currentTime += 1
         #self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
         #self.monitoringThread.start()
         #self.monitoringThread.join()
@@ -167,9 +208,15 @@ class NetworkManagerGui():
         bandwidthInfoLabel.pack(side=TOP)
 
         for infoOID in self.bandwidthInfosName:
-            infoText = self.getFormattedInfoText(infoOID, snmpClient.get(infoOID).value, self.bandwidthInfosName[infoOID])
+            data = snmpClient.get(infoOID).value
+            if infoOID in self.chartKeys.keys():
+                self.chartKeys[infoOID] = data
+                print(infoOID + ': ' + data)
+            infoText = self.getFormattedInfoText(infoOID, data, self.bandwidthInfosName[infoOID])
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
+
+        self.drawChartContent()
             
         parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 
