@@ -159,26 +159,16 @@ class NetworkManagerGui():
         self.startMonitoring(ip, username, password, recentIpsList)   
 
     def getDevicesInfo(self):
-        print('get devices info')
         self.createDeviceInfos(self.deviceInfoFrame, self.snmpClient.clientSession)
         self.createBandwidthInfos(self.bandwidthUsageFrame, self.snmpClient.clientSession)
 
     def startMonitoring(self, ip, username, password, recentIpsList=None):
-        currentTime = 0
         if (not self.snmpClient or self.snmpClient.ip != ip):
             self.setSNMPClientIp(ip, username, password)
             if (recentIpsList):
                 self.setRecentIps(ip, recentIpsList)
         
         self.getDevicesInfo()
-
-        # while currentTime < int(self.timeEntryString.get()): 
-            
-        #     time.sleep(1)
-        #     currentTime += 1
-        #self.monitoringThread = MonitoringThread(int(self.timeEntryString.get()), self.getDevicesInfo)
-        #self.monitoringThread.start()
-        #self.monitoringThread.join()
 
     def setSNMPClientIp (self, ip, username, password):
         self.snmpClient = SNMPClient(ip, username, password)
@@ -211,7 +201,7 @@ class NetworkManagerGui():
             data = snmpClient.get(infoOID).value
             if infoOID in self.chartKeys.keys():
                 self.chartKeys[infoOID] = data
-                print(infoOID + ': ' + data)
+                # print(infoOID + ': ' + data)
             infoText = self.getFormattedInfoText(infoOID, data, self.bandwidthInfosName[infoOID])
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
