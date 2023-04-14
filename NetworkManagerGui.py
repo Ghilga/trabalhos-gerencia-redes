@@ -130,7 +130,7 @@ class NetworkManagerGui():
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
         
-        # parent.after(2000, self.createDeviceInfos, parent, snmpClient)
+        parent.after(2000, self.createDeviceInfos, parent, snmpClient)
     
     def createBandwidthInfos(self, parent, snmpClient):
         self.destroyChildrenWidgets(parent)
@@ -142,7 +142,7 @@ class NetworkManagerGui():
             infoLabel = Label(parent, text=infoText)
             infoLabel.pack(side=TOP, anchor='w')
             
-        # parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
+        parent.after(2000, self.createBandwidthInfos, parent, snmpClient)
 
     def getFormattedInfoText (self, infoOID, value, infoTemplateText):
         infoText = ''
