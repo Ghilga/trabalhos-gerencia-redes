@@ -5,7 +5,6 @@ from tkinter import Canvas
 from SNMPClient import *
 from MonitoringThread import *
 from AttacksClassifier import *
-import time
 
 class NetworkManagerGui():
     def __init__(self):
