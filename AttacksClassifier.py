@@ -76,22 +76,22 @@ class AttacksClassifier():
 
 ## Some small code to test the classifier, using values from the dataset
 
-test = AttacksClassifier()
-# result should be 'icmp-echo'
-aux = test.predict([166456215,136110598,1541,238793,0,314763,574,42,35])
-print(aux)
-# result should be 'normal'
-aux = test.predict([934203604,53611733,709,193506,1,253106,569,27,24])
-print(aux)
-# result should be 'tcp-syn'
-aux = test.predict([613919708,70303007,143,113379,33,158256,21,3,1])
-print(aux)
-# result should be 'udp-flood'
-aux = test.predict([468727289,53883940,1567,174769,2,255566,201,53,50])
-print(aux)
-# result should be 'httpFlood'
-aux = test.predict([3940172569,23366596,55,37048,12,53624,6,0,0])
-print(aux)
-# result should be 'slowloris'
-aux = test.predict([78708299,4234673,272,14511,0,32360,7,4,4])
-print(aux)
+# test = AttacksClassifier()
+# # result should be 'icmp-echo'
+# aux = test.predict([166456215,136110598,1541,238793,0,314763,574,42,35])
+# print(aux)
+# # result should be 'normal'
+# aux = test.predict([934203604,53611733,709,193506,1,253106,569,27,24])
+# print(aux)
+# # result should be 'tcp-syn'
+# aux = test.predict([613919708,70303007,143,113379,33,158256,21,3,1])
+# print(aux)
+# # result should be 'udp-flood'
+# aux = test.predict([468727289,53883940,1567,174769,2,255566,201,53,50])
+# print(aux)
+# # result should be 'httpFlood'
+# aux = test.predict([3940172569,23366596,55,37048,12,53624,6,0,0])
+# print(aux)
+# # result should be 'slowloris'
+# aux = test.predict([78708299,4234673,272,14511,0,32360,7,4,4])
+# print(aux)
